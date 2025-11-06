@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🤖 RoboFit Controller</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      user-select: none;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      color: #eee;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 500px;
+      width: 100%;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+      font-size: 2.5em;
+      text-shadow: 0 0 20px rgba(30, 136, 229, 0.5);
+    }
+
+    .status {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 15px;
+      border-radius: 15px;
+      text-align: center;
+      margin-bottom: 30px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .status-text {
+      font-size: 1.2em;
+      font-weight: bold;
+      color: #4fc3f7;
+    }
+
+    .control-panel {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 30px;
+      border-radius: 25px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .control-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .btn {
+      width: 100%;
+      aspect-ratio: 1;
+      border: none;
+      border-radius: 20px;
+      background: linear-gradient(145deg, #1e88e5, #1565c0);
+      color: white;
+      font-size: 2em;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 5px 15px rgba(30, 136, 229, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn:active {
+      transform: scale(0.95);
+      box-shadow: 0 2px 8px rgba(30, 136, 229, 0.5);
+      background: linear-gradient(145deg, #1565c0, #0d47a1);
+    }
+
+    .btn-stop {
+      background: linear-gradient(145deg, #ef5350, #d32f2f);
+      box-shadow: 0 5px 15px rgba(239, 83, 80, 0.3);
+    }
+
+    .btn-stop:active {
+      background: linear-gradient(145deg, #d32f2f, #b71c1c);
+      box-shadow: 0 2px 8px rgba(239, 83, 80, 0.5);
+    }
+
+    .btn:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+
+    .empty-cell {
+      visibility: hidden;
+    }
+
+    .speed-control {
+      margin-top: 20px;
+      padding: 15px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 15px;
+    }
+
+    .speed-label {
+      text-align: center;
+      margin-bottom: 10px;
+      font-size: 1.1em;
+    }
+
+    .speed-slider {
+      width: 100%;
+      height: 8px;
+      border-radius: 5px;
+      background: rgba(255, 255, 255, 0.1);
+      outline: none;
+      cursor: pointer;
+    }
+
+    .extra-controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .btn-small {
+      padding: 15px;
+      border: none;
+      border-radius: 15px;
+      background: linear-gradient(145deg, #26a69a, #00897b);
+      color: white;
+      font-size: 1em;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 3px 10px rgba(38, 166, 154, 0.3);
+    }
+
+    .btn-small:active {
+      transform: scale(0.95);
+      background: linear-gradient(145deg, #00897b, #00695c);
+    }
+
+    @media (max-width: 480px) {
+      h1 {
+        font-size: 2em;
+      }
+      
+      .btn {
+        font-size: 1.5em;
+      }
+      
+      .control-panel {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🤖 RoboFit</h1>
+    
+    <div class="status">
+      <div class="status-text" id="statusText">READY</div>
+    </div>
+
+    <div class="control-panel">
+      <div class="control-grid">
+        <!-- Row 1 -->
+        <button class="btn" ontouchstart="sendCmd('forward_left')" ontouchend="sendCmd('stop')" onmousedown="sendCmd('forward_left')" onmouseup="sendCmd('stop')">↖</button>
+        <button class="btn" ontouchstart="sendCmd('forward')" ontouchend="sendCmd('stop')" onmousedown="sendCmd('forward')" onmouseup="sendCmd('stop')">↑</button>
+        <button class="btn" ontouchstart="sendCmd('forward_right')" ontouchend="sendCmd('stop')" onmousedown="sendCmd('forward_right')" onmouseup="sendCmd('stop')">↗</button>
+
+        <!-- Row 2 -->
+        <button class="btn" ontouchstart="sendCmd('left')" ontouchend="sendCmd('stop')" onmousedown="sendCmd('left')" onmouseup="sendCmd('stop')">←</button>
+        <button class="btn btn-stop" onclick="sendCmd('stop')">■</button>
+        <button class="btn" ontouchstart="sendCmd('right')" ontouchend="sendCmd('stop')" onmousedown="sendCmd('right')" onmouseup="sendCmd('stop')">→</button>
+
+        <!-- Row 3 -->
+        <div class="empty-cell"></div>
+        <button class="btn" ontouchstart="sendCmd('backward')" ontouchend="sendCmd('stop')" onmousedown="sendCmd('backward')" onmouseup="sendCmd('stop')">↓</button>
+        <div class="empty-cell"></div>
+      </div>
+
+      <div class="extra-controls">
+        <button class="btn-small" ontouchstart="sendCmd('pivot_left')" ontouchend="sendCmd('stop')" onmousedown="sendCmd('pivot_left')" onmouseup="sendCmd('stop')">⟲ Pivot L</button>
+        <button class="btn-small" ontouchstart="sendCmd('pivot_right')" ontouchend="sendCmd('stop')" onmousedown="sendCmd('pivot_right')" onmouseup="sendCmd('stop')">⟳ Pivot R</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const FIREBASE_URL = "https://robofit-691fc-default-rtdb.asia-southeast1.firebasedatabase.app/commands/move.json";
+    let currentCommand = "";
+    let isSending = false;
+
+    function updateStatus(text) {
+      document.getElementById('statusText').textContent = text.toUpperCase();
+    }
+
+    async function sendCmd(cmd) {
+      // Prevent duplicate commands
+      if (cmd === currentCommand && isSending) {
+        return;
+      }
+
+      currentCommand = cmd;
+      isSending = true;
+
+      try {
+        const response = await fetch(FIREBASE_URL, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(cmd)
+        });
+
+        if (response.ok) {
+          updateStatus(cmd);
+          console.log("✅ Sent:", cmd);
+        } else {
+          updateStatus("ERROR");
+          console.error("❌ Failed to send command");
+        }
+      } catch (error) {
+        updateStatus("OFFLINE");
+        console.error("❌ Error:", error);
+      } finally {
+        isSending = false;
+      }
+    }
+
+    // Prevent accidental page scrolling on mobile
+    document.addEventListener('touchmove', function(e) {
+      e.preventDefault();
+    }, { passive: false });
+
+    // Keyboard controls
+    document.addEventListener('keydown', function(e) {
+      switch(e.key) {
+        case 'ArrowUp':
+        case 'w':
+        case 'W':
+          sendCmd('forward');
+          break;
+        case 'ArrowDown':
+        case 's':
+        case 'S':
+          sendCmd('backward');
+          break;
+        case 'ArrowLeft':
+        case 'a':
+        case 'A':
+          sendCmd('left');
+          break;
+        case 'ArrowRight':
+        case 'd':
+        case 'D':
+          sendCmd('right');
+          break;
+        case ' ':
+          sendCmd('stop');
+          break;
+      }
+    });
+
+    document.addEventListener('keyup', function(e) {
+      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'w', 'W', 'a', 'A', 's', 'S', 'd', 'D'].includes(e.key)) {
+        sendCmd('stop');
+      }
+    });
+
+    console.log("🎮 RoboFit Controller Ready!");
+    console.log("💡 Use arrow keys or WASD to control");
+  </script>
+</body>
+</html>
