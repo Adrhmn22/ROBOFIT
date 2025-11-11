@@ -2,69 +2,138 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>🤖 RoboFit Controller</title>
   <style>
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
+      -webkit-user-select: none;
       user-select: none;
+      -webkit-tap-highlight-color: transparent;
     }
 
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-      color: #eee;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+      color: #fff;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 20px;
+      padding: 15px;
+      overflow: hidden;
     }
 
     .container {
-      max-width: 500px;
+      max-width: 450px;
       width: 100%;
     }
 
-    h1 {
+    .header {
       text-align: center;
-      margin-bottom: 30px;
+      margin-bottom: 20px;
+    }
+
+    h1 {
       font-size: 2.5em;
-      text-shadow: 0 0 20px rgba(30, 136, 229, 0.5);
+      margin-bottom: 5px;
+      text-shadow: 0 0 30px rgba(0, 255, 200, 0.6);
+    }
+
+    .subtitle {
+      font-size: 0.9em;
+      color: #a0a0a0;
     }
 
     .status {
-      background: rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.08);
       padding: 15px;
-      border-radius: 15px;
+      border-radius: 20px;
       text-align: center;
-      margin-bottom: 30px;
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.2);
+      margin-bottom: 20px;
+      backdrop-filter: blur(15px);
+      border: 2px solid rgba(255, 255, 255, 0.15);
     }
 
     .status-text {
-      font-size: 1.2em;
-      font-weight: bold;
-      color: #4fc3f7;
+      font-size: 1.3em;
+      font-weight: 700;
+      color: #00ffcc;
+      margin-bottom: 10px;
+    }
+
+    .status-indicators {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      border-radius: 15px;
+      background: rgba(0, 0, 0, 0.3);
+      font-size: 0.85em;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.7; transform: scale(1.1); }
+    }
+
+    .status-indicator.online .status-dot {
+      background: #4caf50;
+      box-shadow: 0 0 10px #4caf50;
+    }
+
+    .status-indicator.offline .status-dot {
+      background: #f44336;
+      box-shadow: 0 0 10px #f44336;
+      animation: blink 1s ease-in-out infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    .status-indicator.checking .status-dot {
+      background: #ff9800;
+      box-shadow: 0 0 10px #ff9800;
+    }
+
+    .last-seen {
+      font-size: 0.75em;
+      color: #888;
+      margin-top: 8px;
     }
 
     .control-panel {
-      background: rgba(255, 255, 255, 0.05);
-      padding: 30px;
-      border-radius: 25px;
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.06);
+      padding: 25px;
+      border-radius: 30px;
+      backdrop-filter: blur(20px);
+      border: 2px solid rgba(255, 255, 255, 0.1);
     }
 
     .control-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 15px;
-      margin-bottom: 20px;
+      gap: 10px;
+      margin-bottom: 15px;
     }
 
     .btn {
@@ -72,62 +141,37 @@
       aspect-ratio: 1;
       border: none;
       border-radius: 20px;
-      background: linear-gradient(145deg, #1e88e5, #1565c0);
+      background: linear-gradient(145deg, #667eea 0%, #764ba2 100%);
       color: white;
       font-size: 2em;
       cursor: pointer;
-      transition: all 0.2s;
-      box-shadow: 0 5px 15px rgba(30, 136, 229, 0.3);
+      transition: all 0.1s;
+      box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
       display: flex;
       align-items: center;
       justify-content: center;
+      font-weight: bold;
+      touch-action: none;
     }
 
     .btn:active {
-      transform: scale(0.95);
-      box-shadow: 0 2px 8px rgba(30, 136, 229, 0.5);
-      background: linear-gradient(145deg, #1565c0, #0d47a1);
+      transform: scale(0.93);
+      box-shadow: 0 2px 8px rgba(102, 126, 234, 0.6);
+    }
+
+    .btn.active {
+      transform: scale(0.93);
+      background: linear-gradient(145deg, #764ba2 0%, #667eea 100%);
+      box-shadow: 0 2px 8px rgba(102, 126, 234, 0.8), inset 0 0 20px rgba(255,255,255,0.2);
     }
 
     .btn-stop {
-      background: linear-gradient(145deg, #ef5350, #d32f2f);
-      box-shadow: 0 5px 15px rgba(239, 83, 80, 0.3);
+      background: linear-gradient(145deg, #ff6b6b 0%, #ee5a6f 100%);
+      font-size: 2.3em;
     }
 
-    .btn-stop:active {
-      background: linear-gradient(145deg, #d32f2f, #b71c1c);
-      box-shadow: 0 2px 8px rgba(239, 83, 80, 0.5);
-    }
-
-    .btn:disabled {
-      opacity: 0.3;
-      cursor: not-allowed;
-    }
-
-    .empty-cell {
-      visibility: hidden;
-    }
-
-    .speed-control {
-      margin-top: 20px;
-      padding: 15px;
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: 15px;
-    }
-
-    .speed-label {
-      text-align: center;
-      margin-bottom: 10px;
-      font-size: 1.1em;
-    }
-
-    .speed-slider {
-      width: 100%;
-      height: 8px;
-      border-radius: 5px;
-      background: rgba(255, 255, 255, 0.1);
-      outline: none;
-      cursor: pointer;
+    .btn-backward {
+      background: linear-gradient(145deg, #f093fb 0%, #f5576c 100%);
     }
 
     .extra-controls {
@@ -141,149 +185,362 @@
       padding: 15px;
       border: none;
       border-radius: 15px;
-      background: linear-gradient(145deg, #26a69a, #00897b);
+      background: linear-gradient(145deg, #11998e 0%, #38ef7d 100%);
       color: white;
       font-size: 1em;
+      font-weight: 600;
       cursor: pointer;
-      transition: all 0.2s;
-      box-shadow: 0 3px 10px rgba(38, 166, 154, 0.3);
+      transition: all 0.1s;
+      touch-action: none;
     }
 
-    .btn-small:active {
+    .btn-small:active, .btn-small.active {
       transform: scale(0.95);
-      background: linear-gradient(145deg, #00897b, #00695c);
+    }
+
+    .keyboard-hints {
+      margin-top: 15px;
+      text-align: center;
+      font-size: 0.8em;
+      color: #888;
+      padding: 10px;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 10px;
     }
 
     @media (max-width: 480px) {
-      h1 {
-        font-size: 2em;
-      }
-      
-      .btn {
-        font-size: 1.5em;
-      }
-      
-      .control-panel {
-        padding: 20px;
-      }
+      h1 { font-size: 2em; }
+      .btn { font-size: 1.7em; }
+      .control-panel { padding: 20px; }
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>🤖 RoboFit</h1>
+    <div class="header">
+      <h1>🤖 RoboFit</h1>
+      <div class="subtitle">MULTI-BUTTON CONTROLLER</div>
+    </div>
     
     <div class="status">
       <div class="status-text" id="statusText">READY</div>
+      <div class="status-indicators">
+        <div class="status-indicator checking" id="controllerStatus">
+          <div class="status-dot"></div>
+          <span>Controller</span>
+        </div>
+        <div class="status-indicator checking" id="robotStatus">
+          <div class="status-dot"></div>
+          <span>Robot</span>
+        </div>
+      </div>
+      <div class="last-seen" id="lastSeen">Checking robot status...</div>
     </div>
 
     <div class="control-panel">
       <div class="control-grid">
         <!-- Row 1 -->
-        <button class="btn" ontouchstart="sendCmd('forward_left')" ontouchend="sendCmd('stop')" onmousedown="sendCmd('forward_left')" onmouseup="sendCmd('stop')">↖</button>
-        <button class="btn" ontouchstart="sendCmd('forward')" ontouchend="sendCmd('stop')" onmousedown="sendCmd('forward')" onmouseup="sendCmd('stop')">↑</button>
-        <button class="btn" ontouchstart="sendCmd('forward_right')" ontouchend="sendCmd('stop')" onmousedown="sendCmd('forward_right')" onmouseup="sendCmd('stop')">↗</button>
+        <button class="btn" data-cmd="forward_left">↖</button>
+        <button class="btn" data-cmd="forward">↑</button>
+        <button class="btn" data-cmd="forward_right">↗</button>
 
         <!-- Row 2 -->
-        <button class="btn" ontouchstart="sendCmd('left')" ontouchend="sendCmd('stop')" onmousedown="sendCmd('left')" onmouseup="sendCmd('stop')">←</button>
-        <button class="btn btn-stop" onclick="sendCmd('stop')">■</button>
-        <button class="btn" ontouchstart="sendCmd('right')" ontouchend="sendCmd('stop')" onmousedown="sendCmd('right')" onmouseup="sendCmd('stop')">→</button>
+        <button class="btn" data-cmd="left">←</button>
+        <button class="btn btn-stop" data-cmd="stop">■</button>
+        <button class="btn" data-cmd="right">→</button>
 
         <!-- Row 3 -->
-        <div class="empty-cell"></div>
-        <button class="btn" ontouchstart="sendCmd('backward')" ontouchend="sendCmd('stop')" onmousedown="sendCmd('backward')" onmouseup="sendCmd('stop')">↓</button>
-        <div class="empty-cell"></div>
+        <button class="btn btn-backward" data-cmd="backward">↓</button>
+        <button class="btn btn-backward" data-cmd="backward">↓</button>
+        <button class="btn btn-backward" data-cmd="backward">↓</button>
       </div>
 
       <div class="extra-controls">
-        <button class="btn-small" ontouchstart="sendCmd('pivot_left')" ontouchend="sendCmd('stop')" onmousedown="sendCmd('pivot_left')" onmouseup="sendCmd('stop')">⟲ Pivot L</button>
-        <button class="btn-small" ontouchstart="sendCmd('pivot_right')" ontouchend="sendCmd('stop')" onmousedown="sendCmd('pivot_right')" onmouseup="sendCmd('stop')">⟳ Pivot R</button>
+        <button class="btn-small" data-cmd="pivot_left">⟲ Pivot L</button>
+        <button class="btn-small" data-cmd="pivot_right">⟳ Pivot R</button>
+      </div>
+
+      <div class="keyboard-hints">
+        💡 Press multiple buttons for combined movement<br>
+        Arrow Keys / WASD supported
       </div>
     </div>
   </div>
 
-  <script>
-    const FIREBASE_URL = "https://robofit-691fc-default-rtdb.asia-southeast1.firebasedatabase.app/commands/move.json";
-    let currentCommand = "";
-    let isSending = false;
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+    import { getDatabase, ref, set, onValue, get } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 
-    function updateStatus(text) {
-      document.getElementById('statusText').textContent = text.toUpperCase();
+    // Firebase configuration
+    const firebaseConfig = {
+      databaseURL: "https://robofit-691fc-default-rtdb.asia-southeast1.firebasedatabase.app"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const database = getDatabase(app);
+
+    let currentCommand = "";
+    let activeButtons = new Set();
+    let pressedKeys = new Set();
+    let robotOnline = false;
+    let lastSeenTime = null;
+
+    const statusText = document.getElementById('statusText');
+    const controllerStatus = document.getElementById('controllerStatus');
+    const robotStatus = document.getElementById('robotStatus');
+    const lastSeenDiv = document.getElementById('lastSeen');
+    const allButtons = document.querySelectorAll('[data-cmd]');
+
+    // Haptic feedback
+    function vibrate() {
+      if ('vibrate' in navigator) navigator.vibrate(10);
     }
 
-    async function sendCmd(cmd) {
-      // Prevent duplicate commands
-      if (cmd === currentCommand && isSending) {
+    // Update status displays
+    function updateCommandStatus(text) {
+      statusText.textContent = text.toUpperCase();
+    }
+
+    function updateControllerStatus(online) {
+      controllerStatus.className = 'status-indicator ' + (online ? 'online' : 'offline');
+    }
+
+    function updateRobotStatus(online, timestamp = null) {
+      robotOnline = online;
+      robotStatus.className = 'status-indicator ' + (online ? 'online' : 'offline');
+      
+      if (online) {
+        lastSeenDiv.textContent = '🟢 Robot is connected and ready';
+      } else if (timestamp) {
+        const date = new Date(parseFloat(timestamp) * 1000);
+        const now = new Date();
+        const diffSeconds = Math.floor((now - date) / 1000);
+        
+        let timeAgo;
+        if (diffSeconds < 60) {
+          timeAgo = `${diffSeconds} seconds ago`;
+        } else if (diffSeconds < 3600) {
+          timeAgo = `${Math.floor(diffSeconds / 60)} minutes ago`;
+        } else {
+          timeAgo = date.toLocaleTimeString();
+        }
+        
+        lastSeenDiv.textContent = `🔴 Last seen: ${timeAgo}`;
+      } else {
+        lastSeenDiv.textContent = '🔴 Robot not connected';
+      }
+    }
+
+    // Monitor robot status from Firebase
+    const statusRef = ref(database, 'status');
+    onValue(statusRef, (snapshot) => {
+      const data = snapshot.val();
+      
+      if (data && data.online === true) {
+        updateRobotStatus(true);
+        console.log('✅ Robot is ONLINE');
+      } else {
+        updateRobotStatus(false, data?.lastSeen);
+        console.log('❌ Robot is OFFLINE');
+      }
+    });
+
+    // Check controller connection
+    setInterval(async () => {
+      try {
+        await get(ref(database, '.info/connected'));
+        updateControllerStatus(true);
+      } catch {
+        updateControllerStatus(false);
+      }
+    }, 3000);
+
+    // Calculate combined command from multiple button presses
+    function getCombinedCommand() {
+      const buttons = Array.from(activeButtons);
+      
+      if (buttons.length === 0) return 'stop';
+      if (buttons.length === 1) return buttons[0];
+      
+      // Multi-button logic
+      const hasForward = buttons.includes('forward');
+      const hasBackward = buttons.includes('backward');
+      const hasLeft = buttons.includes('left');
+      const hasRight = buttons.includes('right');
+      
+      // Forward + Turn
+      if (hasForward && hasLeft) return 'forward_left';
+      if (hasForward && hasRight) return 'forward_right';
+      
+      // Backward + Turn (not implemented in Python, defaults to backward)
+      if (hasBackward && hasLeft) return 'backward';
+      if (hasBackward && hasRight) return 'backward';
+      
+      // Pivot commands take priority
+      if (buttons.includes('pivot_left')) return 'pivot_left';
+      if (buttons.includes('pivot_right')) return 'pivot_right';
+      
+      // Default to first button
+      return buttons[0];
+    }
+
+    // Send command to Firebase
+    async function sendCommand(cmd) {
+      if (cmd === currentCommand) return;
+      
+      currentCommand = cmd;
+      
+      try {
+        await set(ref(database, 'commands/move'), cmd);
+        updateCommandStatus(cmd || 'STOP');
+        updateControllerStatus(true);
+        console.log('📤 Command sent:', cmd);
+      } catch (error) {
+        console.error('❌ Failed to send command:', error);
+        updateControllerStatus(false);
+      }
+    }
+
+    // Button handlers
+    function handleButtonPress(cmd) {
+      if (cmd === 'stop') {
+        activeButtons.clear();
+        allButtons.forEach(btn => btn.classList.remove('active'));
+        sendCommand('stop');
+      } else {
+        activeButtons.add(cmd);
+        const combined = getCombinedCommand();
+        sendCommand(combined);
+      }
+    }
+
+    function handleButtonRelease(cmd) {
+      activeButtons.delete(cmd);
+      const combined = getCombinedCommand();
+      sendCommand(combined);
+    }
+
+    // Attach events to buttons
+    allButtons.forEach(button => {
+      const cmd = button.dataset.cmd;
+      
+      if (cmd === 'stop') {
+        button.addEventListener('click', () => {
+          vibrate();
+          handleButtonPress('stop');
+        });
         return;
       }
-
-      currentCommand = cmd;
-      isSending = true;
-
-      try {
-        const response = await fetch(FIREBASE_URL, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(cmd)
-        });
-
-        if (response.ok) {
-          updateStatus(cmd);
-          console.log("✅ Sent:", cmd);
-        } else {
-          updateStatus("ERROR");
-          console.error("❌ Failed to send command");
+      
+      // Touch events
+      button.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        vibrate();
+        button.classList.add('active');
+        handleButtonPress(cmd);
+      });
+      
+      button.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        button.classList.remove('active');
+        handleButtonRelease(cmd);
+      });
+      
+      button.addEventListener('touchcancel', (e) => {
+        e.preventDefault();
+        button.classList.remove('active');
+        handleButtonRelease(cmd);
+      });
+      
+      // Mouse events (for desktop)
+      button.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        vibrate();
+        button.classList.add('active');
+        handleButtonPress(cmd);
+      });
+      
+      button.addEventListener('mouseup', (e) => {
+        e.preventDefault();
+        button.classList.remove('active');
+        handleButtonRelease(cmd);
+      });
+      
+      button.addEventListener('mouseleave', () => {
+        if (button.classList.contains('active')) {
+          button.classList.remove('active');
+          handleButtonRelease(cmd);
         }
-      } catch (error) {
-        updateStatus("OFFLINE");
-        console.error("❌ Error:", error);
-      } finally {
-        isSending = false;
-      }
-    }
-
-    // Prevent accidental page scrolling on mobile
-    document.addEventListener('touchmove', function(e) {
-      e.preventDefault();
-    }, { passive: false });
+      });
+    });
 
     // Keyboard controls
-    document.addEventListener('keydown', function(e) {
-      switch(e.key) {
-        case 'ArrowUp':
-        case 'w':
-        case 'W':
-          sendCmd('forward');
-          break;
-        case 'ArrowDown':
-        case 's':
-        case 'S':
-          sendCmd('backward');
-          break;
-        case 'ArrowLeft':
-        case 'a':
-        case 'A':
-          sendCmd('left');
-          break;
-        case 'ArrowRight':
-        case 'd':
-        case 'D':
-          sendCmd('right');
-          break;
-        case ' ':
-          sendCmd('stop');
-          break;
+    const keyMap = {
+      'ArrowUp': 'forward', 'w': 'forward', 'W': 'forward',
+      'ArrowDown': 'backward', 's': 'backward', 'S': 'backward',
+      'ArrowLeft': 'left', 'a': 'left', 'A': 'left',
+      'ArrowRight': 'right', 'd': 'right', 'D': 'right',
+      ' ': 'stop', 'x': 'stop', 'X': 'stop'
+    };
+
+    document.addEventListener('keydown', (e) => {
+      const cmd = keyMap[e.key];
+      if (cmd && !pressedKeys.has(e.key)) {
+        e.preventDefault();
+        pressedKeys.add(e.key);
+        
+        const button = document.querySelector(`[data-cmd="${cmd}"]`);
+        if (button && cmd !== 'stop') {
+          button.classList.add('active');
+          handleButtonPress(cmd);
+        } else if (cmd === 'stop') {
+          handleButtonPress('stop');
+        }
       }
     });
 
-    document.addEventListener('keyup', function(e) {
-      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'w', 'W', 'a', 'A', 's', 'S', 'd', 'D'].includes(e.key)) {
-        sendCmd('stop');
+    document.addEventListener('keyup', (e) => {
+      const cmd = keyMap[e.key];
+      if (cmd && pressedKeys.has(e.key)) {
+        e.preventDefault();
+        pressedKeys.delete(e.key);
+        
+        const button = document.querySelector(`[data-cmd="${cmd}"]`);
+        if (button && cmd !== 'stop') {
+          button.classList.remove('active');
+          handleButtonRelease(cmd);
+        }
       }
     });
 
-    console.log("🎮 RoboFit Controller Ready!");
-    console.log("💡 Use arrow keys or WASD to control");
+    // Prevent scrolling on touch devices
+    document.addEventListener('touchmove', (e) => {
+      if (e.target.closest('.control-panel')) e.preventDefault();
+    }, { passive: false });
+
+    // Page visibility - stop robot when tab hidden
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        activeButtons.clear();
+        pressedKeys.clear();
+        allButtons.forEach(btn => btn.classList.remove('active'));
+        sendCommand('stop');
+      }
+    });
+
+    // Window blur - stop robot when losing focus
+    window.addEventListener('blur', () => {
+      activeButtons.clear();
+      pressedKeys.clear();
+      allButtons.forEach(btn => btn.classList.remove('active'));
+      sendCommand('stop');
+    });
+
+    // Initialize
+    console.log("🎮 RoboFit Multi-Button Controller Ready!");
+    sendCommand('stop');
+    updateCommandStatus('READY');
+    updateControllerStatus(true);
   </script>
 </body>
 </html>
